@@ -1,7 +1,12 @@
 package com.client;
 
+import com.common.Callback;
+import com.common.Task;
+
+import java.io.Serializable;
+
 public abstract class TaskExecutor {
-    public <R> void execute(Task task, Callback<R> callback) {
+    public <R extends Serializable> void execute(Task<R> task, Callback<R> callback) {
 
     }
 }

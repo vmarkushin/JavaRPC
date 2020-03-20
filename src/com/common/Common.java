@@ -1,8 +1,10 @@
 package com.common;
 
+import java.io.Serializable;
+
 public class Common {
-    public interface Expression {
-        double evaluate();
+    public interface Expression extends Serializable {
+        double evaluate() throws ProcessException;
     }
 
     public static class Num implements Expression {
@@ -34,7 +36,7 @@ public class Common {
         }
 
         @Override
-        public double evaluate() {
+        public double evaluate() throws ProcessException {
             return expr0.evaluate() + expr1.evaluate();
         }
     }
@@ -45,7 +47,7 @@ public class Common {
         }
 
         @Override
-        public double evaluate() {
+        public double evaluate() throws ProcessException {
             return expr0.evaluate() - expr1.evaluate();
         }
     }
@@ -56,7 +58,7 @@ public class Common {
         }
 
         @Override
-        public double evaluate() {
+        public double evaluate() throws ProcessException {
             return expr0.evaluate() * expr1.evaluate();
         }
     }
@@ -67,8 +69,12 @@ public class Common {
         }
 
         @Override
-        public double evaluate() {
-            return expr0.evaluate() / expr1.evaluate();
+        public double evaluate() throws ProcessException {
+            double denominator = expr1.evaluate();
+            if (denominator == 0.0) {
+                throw new ProcessException("Division by 0");
+            }
+            return expr0.evaluate() / denominator;
         }
     }
 

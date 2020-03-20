@@ -1,6 +1,12 @@
 package com.client;
 
-import com.client.rpc.SimpleTask;
+import com.common.Callback;
+import com.common.Error;
+import com.common.rpc.CalcTask;
+import com.common.rpc.SleepTask;
+import com.common.Common;
+
+import java.io.Serializable;
 
 public class Client {
     TaskExecutor executor;
@@ -9,18 +15,33 @@ public class Client {
         this.executor = executor;
     }
 
-    void doSomething() {
-        var task = new SimpleTask(1000);
+    void sleep() {
+        var task = new SleepTask(1000);
 
-        executor.execute(task, new Callback<Long>() {
+        executor.execute(task, new Callback<Serializable>() {
             @Override
-            public void onResponse(Long response) {
-                System.out.println("Response "+ response);
+            public void onResponse(Serializable response) {
             }
 
             @Override
             public void onError(Error error) {
-                System.out.println("Error: "+ error);
+                System.out.println("Error: " + error);
+            }
+        });
+    }
+
+    void calculate(Common.Expression expr) {
+        var task = new CalcTask(expr);
+
+        executor.execute(task, new Callback<Double>() {
+            @Override
+            public void onResponse(Double response) {
+                System.out.println("Result: " + response);
+            }
+
+            @Override
+            public void onError(Error error) {
+                System.out.println("Error: " + error);
             }
         });
     }
