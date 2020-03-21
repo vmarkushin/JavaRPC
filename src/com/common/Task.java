@@ -3,5 +3,5 @@ package com.common;
 import java.io.Serializable;
 
 public interface Task<R extends Serializable> extends Serializable {
-    R process() throws ProcessException;
+    R execute() throws ExecutionException;
 }

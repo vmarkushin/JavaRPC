@@ -12,7 +12,7 @@ public class SleepTask implements Task<Serializable> {
     }
 
     @Override
-    public Serializable process() {
+    public Serializable execute() {
         System.out.println("Sleeping for " + sleepTime);
         try {
             Thread.sleep(sleepTime);

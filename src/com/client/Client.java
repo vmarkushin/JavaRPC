@@ -4,7 +4,7 @@ import com.common.Callback;
 import com.common.Error;
 import com.common.rpc.CalcTask;
 import com.common.rpc.SleepTask;
-import com.common.Common;
+import com.common.Calc;
 
 import java.io.Serializable;
 
@@ -18,7 +18,7 @@ public class Client {
     void sleep() {
         var task = new SleepTask(1000);
 
-        executor.execute(task, new Callback<Serializable>() {
+        executor.execute(task, new Callback<>() {
             @Override
             public void onResponse(Serializable response) {
             }
@@ -30,10 +30,10 @@ public class Client {
         });
     }
 
-    void calculate(Common.Expression expr) {
+    void calculate(Calc.Expression expr) {
         var task = new CalcTask(expr);
 
-        executor.execute(task, new Callback<Double>() {
+        executor.execute(task, new Callback<>() {
             @Override
             public void onResponse(Double response) {
                 System.out.println("Result: " + response);

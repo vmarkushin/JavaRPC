@@ -2,7 +2,7 @@ package com.client;
 
 import java.io.IOException;
 
-import static com.common.Common.*;
+import static com.common.Calc.*;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {

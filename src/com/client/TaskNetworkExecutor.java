@@ -1,7 +1,9 @@
 package com.client;
 
-import com.common.*;
-import com.common.Error;
+import com.common.Callback;
+import com.common.Request;
+import com.common.Result;
+import com.common.Task;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -14,21 +16,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskNetworkExecutor extends TaskExecutor {
     private ConcurrentHashMap<Integer, Callback<Serializable>> callbacks = new ConcurrentHashMap<>();
     private int currentId = 0;
+    private NetworkThread thread;
 
-    NetworkThread thread;
-
-    static class NetworkThread extends Thread {
+    private class NetworkThread extends Thread {
         Socket socket;
         ObjectInputStream in;
         ObjectOutputStream out;
-        ConcurrentHashMap<Integer, Callback<Serializable>> callbacks;
 
-        public NetworkThread(ConcurrentHashMap<Integer, Callback<Serializable>> callbacks) {
+        public NetworkThread() {
             super();
-            this.callbacks = callbacks;
         }
 
-        public synchronized <T extends Serializable> void send(Request<T> req) {
+        public <T extends Serializable> void send(Request<T> req) {
             try {
                 out.writeObject(req);
             } catch (IOException e) {
@@ -55,17 +54,17 @@ public class TaskNetworkExecutor extends TaskExecutor {
                     e.printStackTrace();
                 }
                 try {
-                    var obj = (Result)in.readObject();
-                    var callback = callbacks.get(obj.id);
+                    var obj = (Result<? extends Serializable>) in.readObject();
+                    var callback = callbacks.get(obj.getId());
                     if (callback != null) {
-                        var error = obj.error;
+                        var error = obj.getError();
                         if (error != null) {
                             callback.onError(error);
                         } else {
-                            callback.onResponse(obj.value);
+                            callback.onResponse(obj.getValue());
                         }
                     } else {
-                        System.err.println("Unknown message id " + obj.id);
+                        System.err.println("Unknown message id " + obj.getId());
                     }
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
@@ -76,7 +75,7 @@ public class TaskNetworkExecutor extends TaskExecutor {
     }
 
     public TaskNetworkExecutor() {
-        thread = new NetworkThread(callbacks);
+        thread = new NetworkThread();
         thread.start();
     }
 
@@ -85,28 +84,5 @@ public class TaskNetworkExecutor extends TaskExecutor {
         callbacks.put(id, (Callback<Serializable>) callback);
         var req = new Request<>(id, task);
         thread.send(req);
-    }
-
-    public Object deserialize(String s) {
-        return null; // deserialization
-    }
-
-    public void onResponse(String response) {
-        var id = 1L; // get id
-        var callback = callbacks.get(id);
-
-        if (callback != null) {
-            var respObj = (Serializable) deserialize(response);
-
-            if (respObj != null) {
-                if (respObj instanceof Error) {
-                    callback.onError((Error) respObj);
-                } else {
-                    callback.onResponse(respObj);
-                }
-            } else {
-                callback.onError(null);
-            }
-        }
     }
 }
