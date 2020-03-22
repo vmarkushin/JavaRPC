@@ -1,11 +1,14 @@
 package com.server;
 
 import com.common.ExecutionException;
-import com.common.Task;
 import com.common.Request;
 import com.common.Result;
+import com.common.Task;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.ServerSocket;
 
 public class Server {
@@ -18,6 +21,11 @@ public class Server {
         socket = new ServerSocket(10000);
     }
 
+    public static void main(String[] args) throws IOException {
+        var server = new Server();
+        server.run();
+    }
+
     void handleRequest(Request<Task<Serializable>> request) throws IOException {
         System.out.println("New request: " + request);
         var id = request.id;
@@ -26,9 +34,8 @@ public class Server {
             System.out.println("Result: " + result);
             out.writeObject(Result.ok(id, result));
         } catch (ExecutionException e) {
-            String text = e.getMessage();
-            System.err.println("Error: " + text);
-            out.writeObject(Result.error(id, text));
+            System.err.println("Error: " + e.getMessage());
+            out.writeObject(Result.error(id, e));
         }
     }
 
@@ -57,10 +64,5 @@ public class Server {
             }
         }
         socket.close();
-    }
-
-    public static void main(String[] args) throws IOException {
-        var server = new Server();
-        server.run();
     }
 }

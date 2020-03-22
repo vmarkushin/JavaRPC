@@ -2,5 +2,6 @@ package com.common;
 
 public interface Callback<R> {
     void onResponse(R response);
-    void onError(Error error);
+
+    void onError(ExecutionException error);
 }

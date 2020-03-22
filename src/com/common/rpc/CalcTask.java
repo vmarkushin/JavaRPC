@@ -1,18 +1,18 @@
 package com.common.rpc;
 
+import com.common.Calc;
 import com.common.ExecutionException;
 import com.common.Task;
-import com.common.Calc;
 
 public class CalcTask implements Task<Double> {
-    Calc.Expression expr;
+    String expr;
 
-    public CalcTask(Calc.Expression expr) {
+    public CalcTask(String expr) {
         this.expr = expr;
     }
 
     @Override
     public Double execute() throws ExecutionException {
-        return expr.evaluate();
+        return Calc.parse(expr).evaluate();
     }
 }

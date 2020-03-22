@@ -1,22 +1,20 @@
 package com.client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-
-import static com.common.Calc.*;
+import java.io.InputStreamReader;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         var client = new Client(new TaskNetworkExecutor());
-        Thread.sleep(100);
+        Thread.sleep(200); // wait for connection
         client.sleep();
-        client.calculate(mul(
-                add(
-                        num(1.0),
-                        num(3.0)
-                ),
-                num(4.0)
-        ));
-        client.calculate(div(num(1.0), num(0.0)));
-        Thread.sleep(1000);
+        client.calculate("(1+12)-14*5");
+        client.calculate("1/0");
+        var reader = new BufferedReader(new InputStreamReader(System.in));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            client.calculate(line);
+        }
     }
 }

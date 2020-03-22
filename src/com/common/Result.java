@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Result<T extends Serializable> implements Serializable {
     private int id;
     private T value;
-    private Error error;
+    private ExecutionException exception;
 
     private Result(int id, T value) {
         this.id = id;
@@ -16,9 +16,9 @@ public class Result<T extends Serializable> implements Serializable {
         return new Result<>(id, value);
     }
 
-    public static Result<Serializable> error(int id, String text) {
+    public static Result<Serializable> error(int id, ExecutionException exception) {
         var result = new Result<>(id, null);
-        result.error = new Error(text);
+        result.exception = exception;
         return result;
     }
 
@@ -30,7 +30,7 @@ public class Result<T extends Serializable> implements Serializable {
         return value;
     }
 
-    public Error getError() {
-        return error;
+    public ExecutionException getException() {
+        return exception;
     }
 }

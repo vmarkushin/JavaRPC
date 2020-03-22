@@ -18,6 +18,18 @@ public class TaskNetworkExecutor extends TaskExecutor {
     private int currentId = 0;
     private NetworkThread thread;
 
+    public TaskNetworkExecutor() {
+        thread = new NetworkThread();
+        thread.start();
+    }
+
+    public <R extends Serializable> void execute(Task<R> task, Callback<R> callback) {
+        var id = currentId++;
+        callbacks.put(id, (Callback<Serializable>) callback);
+        var req = new Request<>(id, task);
+        thread.send(req);
+    }
+
     private class NetworkThread extends Thread {
         Socket socket;
         ObjectInputStream in;
@@ -32,6 +44,20 @@ public class TaskNetworkExecutor extends TaskExecutor {
                 out.writeObject(req);
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+
+        void handleResponse(Result<? extends Serializable> response) {
+            var callback = callbacks.get(response.getId());
+            if (callback != null) {
+                var error = response.getException();
+                if (error != null) {
+                    callback.onError(error);
+                } else {
+                    callback.onResponse(response.getValue());
+                }
+            } else {
+                System.err.println("Unknown message id " + response.getId());
             }
         }
 
@@ -54,35 +80,13 @@ public class TaskNetworkExecutor extends TaskExecutor {
                     e.printStackTrace();
                 }
                 try {
-                    var obj = (Result<? extends Serializable>) in.readObject();
-                    var callback = callbacks.get(obj.getId());
-                    if (callback != null) {
-                        var error = obj.getError();
-                        if (error != null) {
-                            callback.onError(error);
-                        } else {
-                            callback.onResponse(obj.getValue());
-                        }
-                    } else {
-                        System.err.println("Unknown message id " + obj.getId());
-                    }
+                    var response = (Result<? extends Serializable>) in.readObject();
+                    handleResponse(response);
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                     break;
                 }
             }
         }
-    }
-
-    public TaskNetworkExecutor() {
-        thread = new NetworkThread();
-        thread.start();
-    }
-
-    public <R extends Serializable> void execute(Task<R> task, Callback<R> callback) {
-        var id = currentId++;
-        callbacks.put(id, (Callback<Serializable>) callback);
-        var req = new Request<>(id, task);
-        thread.send(req);
     }
 }

@@ -1,10 +1,9 @@
 package com.client;
 
 import com.common.Callback;
-import com.common.Error;
+import com.common.ExecutionException;
 import com.common.rpc.CalcTask;
 import com.common.rpc.SleepTask;
-import com.common.Calc;
 
 import java.io.Serializable;
 
@@ -24,13 +23,13 @@ public class Client {
             }
 
             @Override
-            public void onError(Error error) {
-                System.out.println("Error: " + error);
+            public void onError(ExecutionException error) {
+                System.out.println("Error: " + error.getMessage());
             }
         });
     }
 
-    void calculate(Calc.Expression expr) {
+    void calculate(String expr) {
         var task = new CalcTask(expr);
 
         executor.execute(task, new Callback<>() {
@@ -40,8 +39,8 @@ public class Client {
             }
 
             @Override
-            public void onError(Error error) {
-                System.out.println("Error: " + error);
+            public void onError(ExecutionException error) {
+                System.out.println("Error: " + error.getMessage());
             }
         });
     }
